@@ -1,3 +1,7 @@
+"""
+EDA.py by Grant Perkins, for the DS 1010 group 2 final project. 2022.
+"""
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,44 +12,56 @@ import seaborn as sns
 
 
 def make_summary_table(df):
+    """
+    Calculate summary statistics for any DF
+    :param df: input df
+    :return: summary statistics written to file. Nothing returned.
+    """
     df.describe().round(3).to_csv("tables/summary_stats_normal.csv")
 
 
 def make_corr_table(df, title):
-    # plt.figure(figsize=(10, 10))
-    # plt.matshow(df.corr(), cmap="RdYlGn")
-    # plt.suptitle(title)
-    # formatted_columns = [i.replace(" ", "\n") for i in df.columns]
-    # fontsize = 5.5
-    # plt.xticks(range(len(df.columns)), formatted_columns, fontsize=fontsize)
-    # plt.yticks(range(len(df.columns)), formatted_columns, fontsize=fontsize)
-    # cb = plt.colorbar()
-    # cb.ax.tick_params(labelsize=fontsize)
-    # plt.show()
-    # # plt.savefig("plots/corr.png")
-    # # plt.close()
+    """
+    Creates a correlation matrix for a given DF. does not ignore catergorical variables.
+    :param df: input df
+    :param title: title for the output plot
+    :return: correlation matrix written to file
+    """
     plt.subplots(layout="constrained")
     sns.heatmap(df.corr(), cmap="RdYlGn", annot=True, fmt='.1g', vmin=0, vmax=1)
     plt.title(title)
-    # plt.gca().tick_params(labelsize=6)
-    # plt.margins(x=100, y=100)
     plt.show()
 
     df.corr().round(3).to_csv("tables/corr.csv")
 
 
 def normalize_data(df):
+    """
+    Normalize each column for easier prediction
+    :param df: input df
+    :return: standardized df
+    """
     df = (df - df.mean()) / df.std()
     df.to_csv("tables/normalized.csv")
     return df
 
 
 def filter_data(df):
+    """
+    Remove rows with impossible values. Namely, if BP, BMI, or skin thickness is 0, then that human would be dead.
+    :param df: input df
+    :return: filtered df
+    """
     df = df[(df["Blood Pressure"] != 0) & (df["BMI"] != 0) & (df["Skin Thickness"] != 0)]
     return df
 
 
 def svm(df):
+    """
+    Train an SVM classifier on the input df. creates feature importance plot and classification report.
+    :param df: input df
+    :return: feature importance plot and classification report
+    """
     svc = SVC(kernel="linear")
     features = ["Pregnancies", "Glucose", "Blood Pressure", "Skin Thickness", "Insulin", "BMI", "Age"]
     X = df[features].to_numpy()
@@ -67,8 +83,13 @@ def svm(df):
 
 
 def label_distribution(df):
+    """
+    Creates a bar plot showing distribution of 1's and 0's
+    :param df: input df
+    :return: plot of distributions
+    """
     from collections import Counter
-    x= ['Yes (has diabetes)' if i else 'No' for i in df["Outcome"].to_numpy()]
+    x = ['Yes (has diabetes)' if i else 'No' for i in df["Outcome"].to_numpy()]
     c = Counter(x)
     bars = plt.bar(c.keys(), c.values())
     plt.gca().bar_label(bars)
@@ -76,15 +97,14 @@ def label_distribution(df):
     plt.ylabel("Frequency")
     plt.show()
 
-def box_plots(df):
-    cols = ["Pregnancies", "Glucose", "Blood Pressure", "Skin Thickness", "Insulin", "BMI", "Age"]
-    fig, ax = plt.subplots()
 
 if __name__ == "__main__":
-    # normalized_filtered_df = pd.read_csv("tables/normalized_filtered_diabetes_df.csv")
-    # # make_summary_table(normalized_filtered_df)
-    # # svm(normalized_filtered_df)
+    normalized_filtered_df = pd.read_csv("tables/normalized_filtered_diabetes_df.csv")
+    make_summary_table(normalized_filtered_df)
+    label_distribution(normalized_filtered_df)
+    make_corr_table(normalized_filtered_df, "Correlation Table")
+    svm(normalized_filtered_df)
     # make_corr_table(normalized_filtered_df, "Variable Correlation Matrix")
-    diabetes_df = pd.read_csv("tables/filtered_diabetes_df.csv")
+    # diabetes_df = pd.read_csv("tables/filtered_diabetes_df.csv")
     # make_summary_table(diabetes_df)
-    label_distribution(diabetes_df)
+    # label_distribution(diabetes_df)
